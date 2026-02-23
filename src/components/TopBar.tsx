@@ -1,5 +1,6 @@
 import { defaultProgress } from "@/data/competencies";
 import { Trophy, Bell, User } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const TopBar = () => {
   const progress = defaultProgress;
@@ -7,12 +8,16 @@ const TopBar = () => {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-display font-bold text-sm">
-            CS
-          </div>
-          <span className="font-display font-bold text-lg text-foreground">TechPrep</span>
-        </div>
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src="/icon-192.png"
+            alt="TechPrep Logo"
+            className="h-8 w-8 object-contain rounded-md"
+          />
+          <span className="font-display font-bold text-lg text-foreground">
+            TechPrep
+          </span>
+        </Link>
 
         <div className="flex items-center gap-1.5 rounded-full border border-border bg-secondary px-3 py-1.5">
           <span className="text-xs font-semibold text-muted-foreground">Lv.{progress.level}</span>
