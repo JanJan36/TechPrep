@@ -10,9 +10,9 @@ import Dashboard from "@/pages/Dashboard";
 import LearnPage from "@/pages/LearnPage";
 import PracticePage from "@/pages/PracticePage";
 import PracticeSimulationPage from "@/pages/PracticeSimulationPage";
-import ComingSoonPage from "@/components/ComingSoonPage";
 import GamesPage from "@/pages/GamesPage";
 import GamePlayPage from "@/pages/GamePlayPage";
+import ExplorePage from "@/pages/ExplorePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,7 +33,7 @@ const App = () => (
             <Route path="/practice/:simId" element={<PracticeSimulationPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/:gameId" element={<GamePlayPage />} />
-            <Route path="/explore" element={<ComingSoonPage title="Explore" description="Browse all competencies, tools, and learning paths. This section is under construction." />} />
+            <Route path="/explore" element={<ExplorePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

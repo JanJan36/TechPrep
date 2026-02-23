@@ -33,7 +33,6 @@ const Dashboard = () => {
       icon: Compass,
       path: "/explore",
       badgeClass: "icon-badge-explore",
-      comingSoon: true,
     },
   ];
 
@@ -75,27 +74,18 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {navCards.map((card) => (
             <Link
-              key={card.path}
-              to={card.comingSoon ? "#" : card.path}
-              className={`card-hover group relative flex items-center gap-4 rounded-xl border border-border bg-card p-4 ${card.comingSoon ? "opacity-60 cursor-not-allowed" : ""}`}
+              key={card.title}
+              to={card.path}
+              className="card-hover group relative flex items-center gap-4 rounded-xl border border-border bg-card p-4"
             >
               <div className={`icon-badge ${card.badgeClass}`}>
                 <card.icon className="h-6 w-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-display font-semibold text-card-foreground">{card.title}</h3>
-                  {card.comingSoon && (
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      Soon
-                    </span>
-                  )}
-                </div>
+                <h3 className="font-display font-semibold text-card-foreground">{card.title}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{card.description}</p>
               </div>
-              {!card.comingSoon && (
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              )}
+              <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
             </Link>
           ))}
         </div>
