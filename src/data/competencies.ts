@@ -44,9 +44,9 @@ export const competencies: Competency[] = [
     category: "core",
     topics: [
       { id: "assemble-hardware", title: "Assembling and Disassembling Hardware", description: "Learn to identify, assemble, and safely disassemble computer components.", completed: false, locked: false },
-      { id: "bootable-devices", title: "Preparing Bootable Devices & Installers", description: "Create portable bootable USB drives and installation media.", completed: false, locked: true },
-      { id: "install-os", title: "Installing Operating Systems & Drivers", description: "Install Windows and Linux operating systems with proper drivers.", completed: false, locked: true },
-      { id: "install-apps", title: "Installing Applications & System Tests", description: "Install application software and conduct system tests.", completed: false, locked: true },
+      { id: "bootable-devices", title: "Preparing Bootable Devices & Installers", description: "Create portable bootable USB drives and installation media.", completed: false, locked: false },
+      { id: "install-os", title: "Installing Operating Systems & Drivers", description: "Install Windows and Linux operating systems with proper drivers.", completed: false, locked: false },
+      { id: "install-apps", title: "Installing Applications & System Tests", description: "Install application software and conduct system tests.", completed: false, locked: false },
     ],
   },
   {
@@ -56,9 +56,9 @@ export const competencies: Competency[] = [
     category: "core",
     topics: [
       { id: "network-cables", title: "Creating & Crimping Network Cables", description: "Create and crimp Ethernet cables with proper standards.", completed: false, locked: false },
-      { id: "network-config", title: "Network Configuration (IP, Subnets)", description: "Set up IP addresses, subnets, and network settings.", completed: false, locked: true },
-      { id: "routers-wifi", title: "Configuring Routers & Wi-Fi", description: "Configure routers, Wi-Fi, and wireless access points.", completed: false, locked: true },
-      { id: "test-network", title: "Testing Network Connectivity", description: "Test and inspect network connectivity and troubleshoot issues.", completed: false, locked: true },
+      { id: "network-config", title: "Network Configuration (IP, Subnets)", description: "Set up IP addresses, subnets, and network settings.", completed: false, locked: false },
+      { id: "routers-wifi", title: "Configuring Routers & Wi-Fi", description: "Configure routers, Wi-Fi, and wireless access points.", completed: false, locked: false },
+      { id: "test-network", title: "Testing Network Connectivity", description: "Test and inspect network connectivity and troubleshoot issues.", completed: false, locked: false },
     ],
   },
   {
@@ -68,8 +68,8 @@ export const competencies: Competency[] = [
     category: "core",
     topics: [
       { id: "active-directory", title: "User Access & Active Directory", description: "Set up user access and permissions using Active Directory.", completed: false, locked: false },
-      { id: "network-services", title: "DHCP, DNS & File Server", description: "Configure DHCP, DNS, and File Server services.", completed: false, locked: true },
-      { id: "server-testing", title: "Pre-deployment Testing & Docs", description: "Perform pre-deployment testing and documentation.", completed: false, locked: true },
+      { id: "network-services", title: "DHCP, DNS & File Server", description: "Configure DHCP, DNS, and File Server services.", completed: false, locked: false },
+      { id: "server-testing", title: "Pre-deployment Testing & Docs", description: "Perform pre-deployment testing and documentation.", completed: false, locked: false },
     ],
   },
   {
@@ -79,9 +79,9 @@ export const competencies: Competency[] = [
     category: "core",
     topics: [
       { id: "plan-maintenance", title: "Planning Maintenance & Repair", description: "Plan and prepare for maintenance and repair tasks.", completed: false, locked: false },
-      { id: "diagnose-faults", title: "Diagnosing Hardware & Software Faults", description: "Identify and diagnose hardware and software issues.", completed: false, locked: true },
-      { id: "rectify-defects", title: "Rectifying & Repairing Defects", description: "Repair defects in standalone systems and networks.", completed: false, locked: true },
-      { id: "inspect-test", title: "Inspecting & Testing Repaired Systems", description: "Inspect and test repaired systems for quality assurance.", completed: false, locked: true },
+      { id: "diagnose-faults", title: "Diagnosing Hardware & Software Faults", description: "Identify and diagnose hardware and software issues.", completed: false, locked: false },
+      { id: "rectify-defects", title: "Rectifying & Repairing Defects", description: "Repair defects in standalone systems and networks.", completed: false, locked: false },
+      { id: "inspect-test", title: "Inspecting & Testing Repaired Systems", description: "Inspect and test repaired systems for quality assurance.", completed: false, locked: false },
     ],
   },
   {

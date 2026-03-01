@@ -33,6 +33,7 @@ const Dashboard = () => {
       icon: Compass,
       path: "/explore",
       badgeClass: "icon-badge-explore",
+      
     },
   ];
 
@@ -74,7 +75,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {navCards.map((card) => (
             <Link
-              key={card.title}
+              key={card.path}
               to={card.path}
               className="card-hover group relative flex items-center gap-4 rounded-xl border border-border bg-card p-4"
             >

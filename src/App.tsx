@@ -10,9 +10,9 @@ import Dashboard from "@/pages/Dashboard";
 import LearnPage from "@/pages/LearnPage";
 import PracticePage from "@/pages/PracticePage";
 import PracticeSimulationPage from "@/pages/PracticeSimulationPage";
+import ExplorePage from "@/pages/ExplorePage";
 import GamesPage from "@/pages/GamesPage";
 import GamePlayPage from "@/pages/GamePlayPage";
-import ExplorePage from "@/pages/ExplorePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

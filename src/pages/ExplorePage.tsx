@@ -1,533 +1,353 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { competencies } from "@/data/competencies";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  Search, X, Compass, Wrench, Map, Zap, ArrowRight,
-  ChevronRight, CheckCircle2, Lock, BookOpen,
-  Monitor, Network, Server, Settings, Shield, Calculator,
-  FileText, Wrench as WrenchIcon, Zap as ZapIcon, TestTube,
-  MessageSquare, Users, Briefcase, HardHat, Lightbulb,
+  Search, Filter, Monitor, Network, Server, Settings, Shield, Calculator,
+  FileText, Wrench as WrenchIcon, Zap, TestTube, MessageSquare, Users,
+  Briefcase, HardHat, Lightbulb, ChevronRight, Lock, CheckCircle2,
+  BookOpen, Gamepad2, Target, X, Search as SearchIcon
 } from "lucide-react";
 
-// ── Icon map ──────────────────────────────────────────────────────────────────
 const iconMap: Record<string, React.ElementType> = {
   "install-configure": Monitor, "setup-networks": Network, "setup-servers": Server,
   "maintain-repair": Settings, "quality-standards": Shield, "computer-operations": Monitor,
-  mensuration: Calculator, "technical-drawings": FileText, "hand-tools": WrenchIcon,
-  "electrical-wiring": ZapIcon, "test-components": TestTube, communication: MessageSquare,
-  teamwork: Users, professionalism: Briefcase, ohs: HardHat, "problem-solving": Lightbulb,
-  innovation: Compass,
+  "mensuration": Calculator, "technical-drawings": FileText, "hand-tools": WrenchIcon,
+  "electrical-wiring": Zap, "test-components": TestTube, "communication": MessageSquare,
+  "teamwork": Users, "professionalism": Briefcase, "ohs": HardHat,
+  "problem-solving": Lightbulb, "innovation": SearchIcon,
 };
 
-// ── Enrichment data ───────────────────────────────────────────────────────────
-const competencyTags: Record<string, string[]> = {
-  "install-configure":   ["hardware", "os", "software", "setup"],
-  "setup-networks":      ["networking", "cables", "wifi", "hardware"],
-  "setup-servers":       ["server", "networking", "admin"],
-  "maintain-repair":     ["repair", "hardware", "diagnostic"],
-  "quality-standards":   ["qa", "standards"],
-  "computer-operations": ["software", "data", "files"],
-  mensuration:           ["math", "measurement", "electrical"],
-  "technical-drawings":  ["schematics", "diagrams"],
-  "hand-tools":          ["tools", "hands-on"],
-  "electrical-wiring":   ["electrical", "wiring", "hands-on"],
-  "test-components":     ["electrical", "testing", "multimeter"],
-  communication:         ["soft-skills", "workplace"],
-  teamwork:              ["soft-skills", "workplace"],
-  professionalism:       ["soft-skills", "career"],
-  ohs:                   ["safety", "workplace"],
-  "problem-solving":     ["soft-skills", "logic"],
-  innovation:            ["soft-skills", "workplace"],
+const categoryConfig = {
+  core: { label: "Core", color: "bg-primary/15 text-primary", badge: "icon-badge-learn" },
+  common: { label: "Common", color: "bg-accent/15 text-accent", badge: "icon-badge-practice" },
+  basic: { label: "Basic", color: "bg-warning/15 text-warning", badge: "icon-badge-games" },
 };
 
-const competencyTools: Record<string, { name: string; icon: string }[]> = {
-  "install-configure":   [{ name: "Screwdriver Set", icon: "🪛" }, { name: "Bootable USB", icon: "💾" }, { name: "POST Tester", icon: "🖥️" }],
-  "setup-networks":      [{ name: "Crimping Tool", icon: "🔧" }, { name: "Cable Tester", icon: "🔌" }, { name: "Router", icon: "📡" }],
-  "setup-servers":       [{ name: "Active Directory", icon: "🗂️" }, { name: "DHCP Server", icon: "🌐" }, { name: "DNS Server", icon: "🔗" }],
-  "maintain-repair":     [{ name: "Diagnostic Software", icon: "💻" }, { name: "Multimeter", icon: "⚡" }, { name: "Thermal Paste", icon: "🌡️" }],
-  "quality-standards":   [{ name: "Checklist", icon: "✅" }, { name: "Test Reports", icon: "📋" }],
-  "computer-operations": [{ name: "OS Interface", icon: "🖱️" }, { name: "File Manager", icon: "📁" }],
-  mensuration:           [{ name: "Calipers", icon: "📏" }, { name: "Calculator", icon: "🔢" }],
-  "technical-drawings":  [{ name: "Schematics", icon: "📐" }, { name: "Network Diagrams", icon: "🗺️" }],
-  "hand-tools":          [{ name: "Screwdrivers", icon: "🪛" }, { name: "Pliers", icon: "🔧" }, { name: "Crimpers", icon: "✂️" }],
-  "electrical-wiring":   [{ name: "Wire Stripper", icon: "✂️" }, { name: "Soldering Iron", icon: "🔥" }],
-  "test-components":     [{ name: "Multimeter", icon: "⚡" }, { name: "Oscilloscope", icon: "📊" }],
-  communication:         [{ name: "Reports", icon: "📝" }, { name: "Presentations", icon: "🎤" }],
-  teamwork:              [{ name: "Collaboration Tools", icon: "👥" }],
-  professionalism:       [{ name: "Portfolio", icon: "💼" }],
-  ohs:                   [{ name: "Safety Gear", icon: "🦺" }, { name: "Hazard Signs", icon: "⚠️" }],
-  "problem-solving":     [{ name: "Troubleshooting Guide", icon: "📖" }],
-  innovation:            [{ name: "Process Map", icon: "🗺️" }],
-};
+const pathways = [
+  { id: "hardware", title: "Hardware Specialist", icon: Monitor, description: "PC assembly, repair, and maintenance", competencyIds: ["install-configure", "maintain-repair", "hand-tools", "test-components"], color: "icon-badge-learn" },
+  { id: "networking", title: "Network Technician", icon: Network, description: "Cables, configuration, and servers", competencyIds: ["setup-networks", "setup-servers", "electrical-wiring"], color: "icon-badge-practice" },
+  { id: "workplace", title: "Workplace Ready", icon: Briefcase, description: "Communication, safety, and professionalism", competencyIds: ["communication", "teamwork", "professionalism", "ohs", "problem-solving", "innovation"], color: "icon-badge-games" },
+  { id: "foundations", title: "Technical Foundations", icon: Calculator, description: "Measurements, drawings, and quality", competencyIds: ["quality-standards", "computer-operations", "mensuration", "technical-drawings"], color: "icon-badge-explore" },
+];
 
-const catStyle = {
-  core:   { dot: "bg-primary",  text: "text-primary",  bg: "bg-primary/8",   pill: "bg-primary/10 text-primary",   border: "border-primary/20"  },
-  common: { dot: "bg-accent",   text: "text-accent",   bg: "bg-accent/8",    pill: "bg-accent/10 text-accent",     border: "border-accent/20"   },
-  basic:  { dot: "bg-warning",  text: "text-warning",  bg: "bg-warning/8",   pill: "bg-warning/10 text-warning",   border: "border-warning/20"  },
-} as const;
-
-const ALL_TAGS = Array.from(new Set(Object.values(competencyTags).flat())).sort();
-
-type ViewMode = "directory" | "roadmap" | "tools";
-
-// ── Main ──────────────────────────────────────────────────────────────────────
-export default function ExplorePage() {
-  const [view, setView]               = useState<ViewMode>("directory");
-  const [query, setQuery]             = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-
-  const toggleTag = (tag: string) =>
-    setSelectedTags((p) => p.includes(tag) ? p.filter((t) => t !== tag) : [...p, tag]);
+const ExplorePage = () => {
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<"all" | "core" | "common" | "basic">("all");
+  const [view, setView] = useState<"competencies" | "pathways" | "tools">("competencies");
 
   const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim();
     return competencies.filter((c) => {
-      const tags = competencyTags[c.id] ?? [];
-      const matchTag = !selectedTags.length || selectedTags.some((t) => tags.includes(t));
-      const matchQ   = !q || c.title.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
-        || c.topics.some((t) => t.title.toLowerCase().includes(q));
-      return matchTag && matchQ;
+      const matchesCategory = categoryFilter === "all" || c.category === categoryFilter;
+      const matchesSearch = search === "" ||
+        c.title.toLowerCase().includes(search.toLowerCase()) ||
+        c.description.toLowerCase().includes(search.toLowerCase()) ||
+        c.topics.some(t => t.title.toLowerCase().includes(search.toLowerCase()));
+      return matchesCategory && matchesSearch;
     });
-  }, [query, selectedTags]);
+  }, [search, categoryFilter]);
 
-  const totalTopics = competencies.reduce((a, c) => a + c.topics.length, 0);
-  const doneTopics  = competencies.reduce((a, c) => a + c.topics.filter((t) => t.completed).length, 0);
-  const pct         = Math.round((doneTopics / totalTopics) * 100);
+  const totalTopics = competencies.reduce((sum, c) => sum + c.topics.length, 0);
+  const completedTopics = competencies.reduce((sum, c) => sum + c.topics.filter(t => t.completed).length, 0);
+  const overallPct = totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0;
 
-  const nextTopic = useMemo(() => {
-    for (const c of competencies) {
-      const t = c.topics.find((t) => !t.locked && !t.completed);
-      if (t) return { topic: t, comp: c };
-    }
-    return null;
-  }, []);
+  const tools = [
+    { name: "Screwdriver Set", icon: WrenchIcon, category: "Hand Tools", lessons: ["assemble-hardware", "plan-maintenance"] },
+    { name: "Crimping Tool", icon: WrenchIcon, category: "Network Tools", lessons: ["network-cables"] },
+    { name: "Multimeter", icon: TestTube, category: "Testing", lessons: ["multimeter-testing", "diagnose-faults"] },
+    { name: "Cable Tester", icon: Network, category: "Network Tools", lessons: ["network-cables", "test-network"] },
+    { name: "Anti-Static Wrist Strap", icon: Shield, category: "Safety", lessons: ["assemble-hardware", "hazard-control"] },
+    { name: "Bootable USB Drive", icon: Monitor, category: "Software", lessons: ["bootable-devices", "install-os"] },
+    { name: "Network Switch", icon: Network, category: "Network Hardware", lessons: ["network-config", "routers-wifi"] },
+    { name: "Thermal Paste", icon: Zap, category: "Components", lessons: ["assemble-hardware", "rectify-defects"] },
+  ];
+
+  const filteredTools = tools.filter(t =>
+    search === "" || t.name.toLowerCase().includes(search.toLowerCase()) || t.category.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="pb-24">
-
-      {/* ── Hero ── */}
-      <section className="relative bg-gradient-to-br from-[hsl(280,65%,55%)]/10 via-background to-primary/5 px-4 pt-6 pb-4">
+      {/* Header */}
+      <section className="bg-gradient-to-br from-[hsl(280_65%_55%/0.08)] via-background to-primary/5 px-4 py-6">
         <div className="mx-auto max-w-4xl">
-          <div className="flex items-center gap-2 mb-1">
-            <Compass className="h-5 w-5 text-[hsl(280,65%,55%)]" />
-            <h1 className="font-display text-2xl font-bold text-foreground">Explore</h1>
-          </div>
-          <p className="text-sm text-muted-foreground mb-4">Discover topics, tools, and your full certification path</p>
+          <h1 className="font-display text-2xl font-bold text-foreground">Explore</h1>
+          <p className="text-sm text-muted-foreground mt-1">Browse competencies, learning paths, and tools</p>
 
-          {/* Overall mastery bar */}
-          <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-4">
+          {/* Overall progress */}
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-border bg-card p-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <span className="text-lg font-bold text-primary">{overallPct}%</span>
+            </div>
             <div className="flex-1">
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-muted-foreground">Overall mastery</span>
-                <span className="font-bold">{doneTopics}/{totalTopics} topics</span>
-              </div>
-              <div className="h-3 rounded-full bg-muted overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-primary via-[hsl(280,65%,55%)] to-accent transition-all"
-                  style={{ width: `${pct || 2}%` }}
+              <p className="text-xs font-medium text-foreground">Overall Mastery</p>
+              <div className="mt-1 h-2 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${overallPct}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
                 />
               </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <p className="text-2xl font-bold text-[hsl(280,65%,55%)]">{pct}%</p>
-              <p className="text-[10px] text-muted-foreground">complete</p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">{completedTopics} of {totalTopics} topics completed</p>
             </div>
           </div>
-
-          {/* Up Next banner */}
-          {nextTopic && (
-            <Link
-              to={`/learn/${nextTopic.topic.id}`}
-              className="mt-3 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 hover:bg-primary/10 transition-colors group"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-primary flex-shrink-0">
-                <Zap className="h-4 w-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Up Next</p>
-                <p className="text-sm font-semibold text-foreground truncate">{nextTopic.topic.title}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{nextTopic.comp.title}</p>
-              </div>
-              <ArrowRight className="h-4 w-4 text-primary group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
-            </Link>
-          )}
         </div>
       </section>
 
-      {/* ── Tab bar ── */}
-      <div className="sticky top-[57px] z-30 border-b border-border bg-background/95 backdrop-blur-md">
-        <div className="mx-auto max-w-4xl px-4 py-2 flex gap-1">
-          {([ 
-            { id: "directory" as ViewMode, label: "Directory", icon: Search },
-            { id: "roadmap"   as ViewMode, label: "Roadmap",   icon: Map    },
-            { id: "tools"     as ViewMode, label: "Tools",     icon: Wrench },
-          ]).map(({ id, label, icon: Icon }) => (
+      {/* Search & Filters */}
+      <div className="mx-auto max-w-4xl px-4 pt-4 space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search competencies, topics, tools..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border bg-card pl-10 pr-10 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+            </button>
+          )}
+        </div>
+
+        {/* View tabs */}
+        <div className="flex gap-2">
+          {([
+            { key: "competencies", label: "Competencies", icon: BookOpen },
+            { key: "pathways", label: "Learning Paths", icon: Target },
+            { key: "tools", label: "Tools & Equipment", icon: WrenchIcon },
+          ] as const).map((tab) => (
             <button
-              key={id}
-              onClick={() => setView(id)}
-              className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold transition-colors ${
-                view === id
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              key={tab.key}
+              onClick={() => setView(tab.key)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                view === tab.key
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-secondary text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
+              <tab.icon className="h-3 w-3" />
+              {tab.label}
             </button>
           ))}
         </div>
+
+        {/* Category filter (competencies view) */}
+        {view === "competencies" && (
+          <div className="flex gap-1.5">
+            {(["all", "core", "common", "basic"] as const).map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                  categoryFilter === cat
+                    ? "bg-foreground text-background"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {cat === "all" ? "All" : categoryConfig[cat].label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="mx-auto max-w-4xl px-4 pt-5">
+      {/* Content */}
+      <div className="mx-auto max-w-4xl px-4 pt-4 space-y-3">
+        <AnimatePresence mode="wait">
+          {view === "competencies" && (
+            <motion.div key="comp" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+              <p className="text-xs text-muted-foreground">{filtered.length} competencies found</p>
+              {filtered.map((comp, i) => {
+                const Icon = iconMap[comp.id] || Monitor;
+                const done = comp.topics.filter(t => t.completed).length;
+                const total = comp.topics.length;
+                const pct = total > 0 ? (done / total) * 100 : 0;
+                const catCfg = categoryConfig[comp.category];
 
-        {/* ══════════════════════════════════════════════════════════
-            DIRECTORY — searchable flat topic grid with tag filters
-            ══════════════════════════════════════════════════════════ */}
-        {view === "directory" && (
-          <div className="space-y-5">
-
-            {/* Search input */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search topics, keywords…"
-                className="w-full rounded-xl border border-border bg-card pl-9 pr-9 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
-              />
-              {query && (
-                <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Tag cloud */}
-            <div className="flex flex-wrap gap-1.5">
-              <span className="text-[11px] font-semibold text-muted-foreground self-center mr-1">Filter:</span>
-              {ALL_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium border transition-all ${
-                    selectedTags.includes(tag)
-                      ? "bg-[hsl(280,65%,55%)] text-white border-transparent scale-105"
-                      : "bg-card border-border text-muted-foreground hover:border-foreground/40"
-                  }`}
-                >
-                  #{tag}
-                </button>
-              ))}
-              {selectedTags.length > 0 && (
-                <button
-                  onClick={() => setSelectedTags([])}
-                  className="rounded-full px-2.5 py-0.5 text-[11px] font-medium bg-destructive/10 border border-destructive/20 text-destructive"
-                >
-                  ✕ clear
-                </button>
-              )}
-            </div>
-
-            {/* Count */}
-            <p className="text-[11px] text-muted-foreground">
-              Showing {filtered.length} competenc{filtered.length !== 1 ? "ies" : "y"}
-              {selectedTags.length > 0 && ` · ${selectedTags.join(", ")}`}
-            </p>
-
-            {/* Results — topics laid out as chips under each competency */}
-            {filtered.length === 0 ? (
-              <div className="flex flex-col items-center py-16 text-center">
-                <Search className="h-10 w-10 text-muted-foreground/30 mb-3" />
-                <p className="font-semibold text-foreground mb-1">Nothing found</p>
-                <button
-                  onClick={() => { setQuery(""); setSelectedTags([]); }}
-                  className="text-xs text-primary underline"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-8">
-                {filtered.map((comp) => {
-                  const Icon = iconMap[comp.id] ?? Compass;
-                  const cs = catStyle[comp.category];
-                  const tags = competencyTags[comp.id] ?? [];
-                  const doneCount = comp.topics.filter((t) => t.completed).length;
-
-                  return (
-                    <div key={comp.id}>
-                      {/* Competency header */}
-                      <div className="flex items-center gap-2.5 mb-3">
-                        <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${cs.bg}`}>
-                          <Icon className={`h-4 w-4 ${cs.text}`} />
+                return (
+                  <motion.div
+                    key={comp.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="rounded-xl border border-border bg-card overflow-hidden"
+                  >
+                    <div className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`icon-badge ${catCfg.badge}`}>
+                          <Icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-display font-bold text-foreground leading-tight">{comp.title}</p>
-                          <p className="text-[11px] text-muted-foreground">{doneCount}/{comp.topics.length} topics done</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-display font-semibold text-sm text-card-foreground">{comp.title}</h3>
+                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${catCfg.color}`}>
+                              {catCfg.label}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">{comp.description}</p>
+                          <div className="mt-2 flex items-center gap-2">
+                            <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
+                              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="text-[10px] font-medium text-muted-foreground">{done}/{total}</span>
+                          </div>
                         </div>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${cs.pill}`}>
-                          {comp.category}
-                        </span>
                       </div>
 
-                      {/* Tag badges */}
-                      <div className="flex flex-wrap gap-1 mb-2 pl-[42px]">
-                        {tags.map((t) => (
-                          <span
-                            key={t}
-                            onClick={() => toggleTag(t)}
-                            className={`cursor-pointer rounded-full px-2 py-0.5 text-[10px] border transition-colors ${
-                              selectedTags.includes(t)
-                                ? "bg-[hsl(280,65%,55%)]/10 border-[hsl(280,65%,55%)]/40 text-[hsl(280,65%,55%)]"
-                                : "border-border/60 text-muted-foreground hover:border-foreground/30"
-                            }`}
-                          >
-                            #{t}
-                          </span>
-                        ))}
-                      </div>
-
-                      {/* Topic chips grid */}
-                      <div className="pl-[42px] grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {comp.topics.map((topic) => {
-                          if (topic.locked) {
-                            return (
-                              <div
-                                key={topic.id}
-                                className="flex items-center gap-2 rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 opacity-45"
-                              >
-                                <Lock className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                                <span className="text-xs text-muted-foreground truncate">{topic.title}</span>
-                              </div>
-                            );
-                          }
-                          return (
+                      <div className="mt-3 pl-[60px] space-y-1">
+                        {comp.topics.map(topic => (
+                          topic.locked ? (
+                            <div key={topic.id} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground/50">
+                              <Lock className="h-3 w-3 shrink-0" />
+                              <span className="line-through">{topic.title}</span>
+                            </div>
+                          ) : (
                             <Link
                               key={topic.id}
                               to={`/learn/${topic.id}`}
-                              className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 transition-all hover:shadow-sm group ${
-                                topic.completed
-                                  ? "border-success/30 bg-success/5 hover:bg-success/10"
-                                  : `border-border bg-card hover:${cs.border} hover:${cs.bg}`
+                              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                                topic.completed ? "bg-success/10 text-foreground" : "bg-secondary hover:bg-muted text-foreground"
                               }`}
                             >
-                              {topic.completed
-                                ? <CheckCircle2 className="h-3.5 w-3.5 text-success flex-shrink-0" />
-                                : <div className={`h-2 w-2 rounded-full flex-shrink-0 ${cs.dot}`} />
-                              }
-                              <span className="text-xs font-medium text-foreground flex-1 truncate">{topic.title}</span>
-                              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity" />
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════
-            ROADMAP — visual linear certification path
-            ══════════════════════════════════════════════════════════ */}
-        {view === "roadmap" && (
-          <div>
-            <p className="text-xs text-muted-foreground mb-6">
-              Your NC II certification path. Complete each track to unlock the next level.
-            </p>
-
-            {(["core", "common", "basic"] as const).map((cat) => {
-              const catComps  = competencies.filter((c) => c.category === cat);
-              const cs        = catStyle[cat];
-              const trackDone = catComps.filter((c) => c.topics.every((t) => t.completed)).length;
-              const trackLabels = {
-                core:   { emoji: "🖥️", name: "Core Track",   sub: "Technical computer skills" },
-                common: { emoji: "🔧", name: "Common Track",  sub: "Shared trade skills"       },
-                basic:  { emoji: "🤝", name: "Basic Track",   sub: "21st-century workplace"    },
-              };
-              const tl = trackLabels[cat];
-
-              return (
-                <div key={cat} className="mb-8">
-                  {/* Track header */}
-                  <div className={`rounded-xl border ${cs.border} ${cs.bg} px-4 py-3 mb-1 flex items-center justify-between`}>
-                    <div>
-                      <p className={`font-display font-bold text-sm ${cs.text}`}>{tl.emoji} {tl.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{tl.sub}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className={`text-lg font-bold ${cs.text}`}>{trackDone}/{catComps.length}</p>
-                      <p className="text-[10px] text-muted-foreground">done</p>
-                    </div>
-                  </div>
-
-                  {/* Nodes */}
-                  <div className="border border-border rounded-xl overflow-hidden bg-card divide-y divide-border">
-                    {catComps.map((comp, idx) => {
-                      const Icon      = iconMap[comp.id] ?? Compass;
-                      const done      = comp.topics.filter((t) => t.completed).length;
-                      const total     = comp.topics.length;
-                      const allDone   = done === total;
-                      const anyDone   = done > 0;
-                      const allLocked = comp.topics.every((t) => t.locked);
-                      const firstOpen = comp.topics.find((t) => !t.locked && !t.completed);
-
-                      return (
-                        <div key={comp.id} className={`flex items-start gap-3 px-4 py-4 ${allLocked ? "opacity-50" : ""}`}>
-                          {/* Connector */}
-                          <div className="flex flex-col items-center flex-shrink-0 mt-0.5">
-                            <div className={`h-9 w-9 rounded-full flex items-center justify-center border-2 ${
-                              allDone   ? "border-success bg-success/10"
-                              : anyDone ? `border-primary bg-primary/10`
-                              : allLocked ? "border-border bg-muted"
-                              : `bg-card ${cs.border}`
-                            }`}>
-                              {allDone    ? <CheckCircle2 className="h-4 w-4 text-success" />
-                               : allLocked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" />
-                               : <Icon className={`h-4 w-4 ${cs.text}`} />}
-                            </div>
-                            {idx < catComps.length - 1 && (
-                              <div className={`w-0.5 h-6 mt-1 ${allDone ? "bg-success/40" : "bg-border"}`} />
-                            )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <div>
-                                <p className="text-sm font-semibold text-foreground">{comp.title}</p>
-                                <p className="text-[11px] text-muted-foreground mt-0.5">{comp.description}</p>
-                              </div>
-                              {allDone && (
-                                <span className="flex-shrink-0 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">✓ Done</span>
+                              {topic.completed ? (
+                                <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
+                              ) : (
+                                <div className="h-3.5 w-3.5 rounded-full border-2 border-primary/40 shrink-0" />
                               )}
-                            </div>
-
-                            {/* Progress bar */}
-                            {!allLocked && (
-                              <div className="mt-2.5 flex items-center gap-2">
-                                <div className="h-1.5 flex-1 rounded-full bg-muted overflow-hidden">
-                                  <div
-                                    className={`h-full rounded-full ${cs.dot} transition-all`}
-                                    style={{ width: `${Math.round((done / total) * 100)}%` }}
-                                  />
-                                </div>
-                                <span className="text-[10px] text-muted-foreground font-medium">{done}/{total}</span>
-                              </div>
-                            )}
-
-                            {/* CTA to first open topic */}
-                            {!allDone && firstOpen && (
-                              <Link
-                                to={`/learn/${firstOpen.id}`}
-                                className={`mt-2 inline-flex items-center gap-1.5 rounded-lg ${cs.bg} ${cs.border} border px-3 py-1.5 text-xs font-semibold ${cs.text} hover:opacity-80 transition-opacity`}
-                              >
-                                <BookOpen className="h-3 w-3" />
-                                {done === 0 ? "Start: " : "Continue: "}{firstOpen.title}
-                                <ArrowRight className="h-3 w-3" />
-                              </Link>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════════════════
-            TOOLS — reference directory of all tools & equipment
-            ══════════════════════════════════════════════════════════ */}
-        {view === "tools" && (
-          <div>
-            <p className="text-xs text-muted-foreground mb-5">
-              All tools and equipment across your NC II training — tap any competency to start learning.
-            </p>
-
-            {/* Quick stats */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="rounded-xl border border-border bg-card p-3 text-center">
-                <p className="text-lg font-bold text-primary">{Object.values(competencyTools).flat().length}</p>
-                <p className="text-[10px] text-muted-foreground">Total Tools</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-3 text-center">
-                <p className="text-lg font-bold text-accent">
-                  {Object.values(competencyTools).filter((t) => t.length > 0).length}
-                </p>
-                <p className="text-[10px] text-muted-foreground">Categories</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-3 text-center">
-                <p className="text-lg font-bold text-warning">
-                  {competencies.filter((c) => !c.topics.every((t) => t.locked)).length}
-                </p>
-                <p className="text-[10px] text-muted-foreground">Accessible</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {competencies.map((comp) => {
-                const tools = competencyTools[comp.id] ?? [];
-                if (!tools.length) return null;
-                const Icon    = iconMap[comp.id] ?? Compass;
-                const cs      = catStyle[comp.category];
-                const locked  = comp.topics.every((t) => t.locked);
-                const done    = comp.topics.every((t) => t.completed);
-                const firstOpen = comp.topics.find((t) => !t.locked && !t.completed);
-
-                return (
-                  <div key={comp.id} className={`rounded-xl border border-border bg-card overflow-hidden ${locked ? "opacity-55" : ""}`}>
-                    {/* Header */}
-                    <div className={`flex items-center gap-3 px-4 py-3 ${cs.bg} border-b border-border`}>
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card/70 flex-shrink-0">
-                        <Icon className={`h-4.5 w-4.5 ${cs.text}`} />
+                              <span>{topic.title}</span>
+                              <ChevronRight className="h-3 w-3 ml-auto text-muted-foreground" />
+                            </Link>
+                          )
+                        ))}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm font-display font-bold ${cs.text}`}>{comp.title}</p>
-                        <p className="text-[11px] text-muted-foreground">{tools.length} tool{tools.length > 1 ? "s" : ""} used</p>
-                      </div>
-                      {locked ? (
-                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Lock className="h-3 w-3" /> Locked
-                        </span>
-                      ) : done ? (
-                        <span className="rounded-full bg-success/10 px-2.5 py-1 text-[10px] font-bold text-success">
-                          ✓ Done
-                        </span>
-                      ) : firstOpen ? (
-                        <Link
-                          to={`/learn/${firstOpen.id}`}
-                          className={`rounded-full ${cs.dot} px-2.5 py-1 text-[10px] font-bold text-white flex items-center gap-1`}
-                        >
-                          Learn <ChevronRight className="h-3 w-3" />
-                        </Link>
-                      ) : null}
                     </div>
-
-                    {/* Tool chips */}
-                    <div className="px-4 py-3 flex flex-wrap gap-2">
-                      {tools.map((tool) => (
-                        <div
-                          key={tool.name}
-                          className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-3 py-2"
-                        >
-                          <span className="text-base leading-none">{tool.icon}</span>
-                          <span className="text-xs font-medium text-foreground">{tool.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  </motion.div>
                 );
               })}
-            </div>
-          </div>
-        )}
+              {filtered.length === 0 && (
+                <div className="py-12 text-center">
+                  <Search className="mx-auto h-8 w-8 text-muted-foreground/40" />
+                  <p className="mt-2 text-sm text-muted-foreground">No competencies match your search</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {view === "pathways" && (
+            <motion.div key="paths" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+              <p className="text-xs text-muted-foreground">{pathways.length} learning paths</p>
+              {pathways.map((path, i) => {
+                const pathComps = competencies.filter(c => path.competencyIds.includes(c.id));
+                const pathTopics = pathComps.reduce((s, c) => s + c.topics.length, 0);
+                const pathDone = pathComps.reduce((s, c) => s + c.topics.filter(t => t.completed).length, 0);
+                const pathPct = pathTopics > 0 ? Math.round((pathDone / pathTopics) * 100) : 0;
+
+                return (
+                  <motion.div
+                    key={path.id}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="rounded-xl border border-border bg-card p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`icon-badge ${path.color}`}>
+                        <path.icon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-display font-semibold text-sm text-card-foreground">{path.title}</h3>
+                        <p className="text-xs text-muted-foreground">{path.description}</p>
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+                            <motion.div
+                              className="h-full rounded-full bg-gradient-to-r from-primary to-accent"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${pathPct}%` }}
+                              transition={{ duration: 0.6, delay: i * 0.1 }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold text-primary">{pathPct}%</span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {pathComps.map(c => {
+                            const Icon = iconMap[c.id] || Monitor;
+                            const done = c.topics.filter(t => t.completed).length === c.topics.length;
+                            return (
+                              <span
+                                key={c.id}
+                                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                  done ? "bg-success/15 text-success" : "bg-secondary text-muted-foreground"
+                                }`}
+                              >
+                                <Icon className="h-2.5 w-2.5" />
+                                {c.title.length > 25 ? c.title.slice(0, 22) + "…" : c.title}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          )}
+
+          {view === "tools" && (
+            <motion.div key="tools" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-3">
+              <p className="text-xs text-muted-foreground">{filteredTools.length} tools & equipment</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {filteredTools.map((tool, i) => (
+                  <motion.div
+                    key={tool.name}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="rounded-xl border border-border bg-card p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="icon-badge icon-badge-explore">
+                        <tool.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-display text-sm font-semibold text-card-foreground">{tool.name}</h4>
+                        <span className="text-[10px] font-medium text-muted-foreground">{tool.category}</span>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {tool.lessons.map(lessonId => {
+                        const topic = competencies.flatMap(c => c.topics).find(t => t.id === lessonId);
+                        return topic ? (
+                          <Link
+                            key={lessonId}
+                            to={topic.locked ? "#" : `/learn/${lessonId}`}
+                            className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            {topic.completed ? <CheckCircle2 className="h-2.5 w-2.5 text-success" /> : topic.locked ? <Lock className="h-2.5 w-2.5" /> : <BookOpen className="h-2.5 w-2.5" />}
+                            {topic.title}
+                          </Link>
+                        ) : null;
+                      })}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+              {filteredTools.length === 0 && (
+                <div className="py-12 text-center">
+                  <WrenchIcon className="mx-auto h-8 w-8 text-muted-foreground/40" />
+                  <p className="mt-2 text-sm text-muted-foreground">No tools match your search</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
-}
+};
+
+export default ExplorePage;
