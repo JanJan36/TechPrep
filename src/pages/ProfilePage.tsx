@@ -43,6 +43,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     saveProfile(profile);
+    window.dispatchEvent(new Event("profile-updated"));
   }, [profile]);
 
   const handleSave = () => {
