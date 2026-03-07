@@ -13,6 +13,8 @@ import PracticeSimulationPage from "@/pages/PracticeSimulationPage";
 import ExplorePage from "@/pages/ExplorePage";
 import GamesPage from "@/pages/GamesPage";
 import GamePlayPage from "@/pages/GamePlayPage";
+import ProfilePage from "@/pages/ProfilePage";
+import AchievementsPage from "@/pages/AchievementsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/games" element={<GamesPage />} />
             <Route path="/games/:gameId" element={<GamePlayPage />} />
             <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/achievements" element={<AchievementsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
