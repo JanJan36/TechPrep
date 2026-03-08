@@ -3,13 +3,15 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, XCircle, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { QuizQuestion } from "@/data/lessonContents";
+import { completeLesson } from "@/hooks/useProgress";
 
 interface LessonQuizProps {
+  topicId: string;
   questions: QuizQuestion[];
   xpReward: number;
 }
 
-const LessonQuiz = ({ questions, xpReward }: LessonQuizProps) => {
+const LessonQuiz = ({ topicId, questions, xpReward }: LessonQuizProps) => {
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -34,6 +36,11 @@ const LessonQuiz = ({ questions, xpReward }: LessonQuizProps) => {
       setShowExplanation(false);
     } else {
       setQuizFinished(true);
+      // correctCount is already updated by handleAnswer
+      const finalPassed = Math.round((correctCount / questions.length) * 100) >= 70;
+      if (finalPassed) {
+        completeLesson(topicId, xpReward);
+      }
     }
   };
 

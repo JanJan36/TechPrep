@@ -1,6 +1,6 @@
 import { BookOpen, Wrench, Gamepad2, Flame, Star, Trophy } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { defaultProgress } from "@/data/competencies";
+import { useProgress, useCompletedLessons } from "@/hooks/useProgress";
 import { getHighScores } from "@/hooks/useGameScores";
 import { motion } from "framer-motion";
 
@@ -62,7 +62,8 @@ const categoryConfig: Record<string, { label: string; icon: React.ElementType; g
 };
 
 const AchievementsPage = () => {
-  const progress = defaultProgress;
+  const progress = useProgress();
+  const completedLessons = useCompletedLessons();
   const scores = getHighScores();
 
   // Compute dynamic current values
@@ -71,6 +72,9 @@ const AchievementsPage = () => {
 
   const enriched = achievements.map((a) => {
     let current = a.current ?? 0;
+    if (a.id === "first-lesson") current = Math.min(completedLessons.length, 1);
+    if (a.id === "knowledge-seeker") current = completedLessons.length;
+    if (a.id === "quiz-ace") current = Object.values(scores).some((s) => s.percentage === 100) ? 1 : 0;
     if (a.id === "game-on") current = Math.min(gamesPlayed, 1);
     if (a.id === "game-master") current = gamesPlayed;
     if (a.id === "xp-collector") current = progress.xp;

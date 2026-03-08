@@ -107,7 +107,7 @@ const LessonPage = () => {
             <div className="mt-3 h-1.5 rounded-full bg-accent overflow-hidden" />
           </div>
         </section>
-        <LessonQuiz questions={lesson.quiz} xpReward={lesson.xpReward} />
+        <LessonQuiz topicId={topicId!} questions={lesson.quiz} xpReward={lesson.xpReward} />
       </div>
     );
   }

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { defaultProgress } from "@/data/competencies";
+import { useProgress } from "@/hooks/useProgress";
 import { Trophy, Bell, User } from "lucide-react";
 
 const PROFILE_KEY = "techprep-profile";
 
 const TopBar = () => {
-  const progress = defaultProgress;
+  const progress = useProgress();
   const [avatar, setAvatar] = useState("👨‍💻");
 
   useEffect(() => {

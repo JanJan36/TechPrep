@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { competencies } from "@/data/competencies";
 import { ChevronRight, Lock, CheckCircle2, Monitor, Network, Server, Settings, Shield, Calculator, FileText, Wrench as WrenchIcon, Zap, TestTube, MessageSquare, Users, Briefcase, HardHat, Lightbulb, Search } from "lucide-react";
 import { useState } from "react";
+import { useCompletedLessons } from "@/hooks/useProgress";
 
 const iconMap: Record<string, React.ElementType> = {
   "install-configure": Monitor,
@@ -30,6 +31,7 @@ const categoryLabels = {
 };
 
 const LearnPage = () => {
+  const completedLessons = useCompletedLessons();
   const [activeTab, setActiveTab] = useState<"core" | "common" | "basic">("core");
   const filtered = competencies.filter((c) => c.category === activeTab);
   const cat = categoryLabels[activeTab];
@@ -71,14 +73,15 @@ const LearnPage = () => {
       <div className="mx-auto max-w-4xl px-4 space-y-3">
         {filtered.map((comp) => {
           const Icon = iconMap[comp.id] || Monitor;
-          const completedTopics = comp.topics.filter((t) => t.completed).length;
+          const completedTopics = comp.topics.filter((t) => completedLessons.includes(t.id)).length;
           const totalTopics = comp.topics.length;
           const progressPct = totalTopics > 0 ? (completedTopics / totalTopics) * 100 : 0;
+          const allDone = completedTopics === totalTopics && totalTopics > 0;
 
           return (
             <div
               key={comp.id}
-              className="card-hover rounded-xl border border-border bg-card overflow-hidden"
+              className={`card-hover rounded-xl border bg-card overflow-hidden ${allDone ? "border-success/50 bg-success/5" : "border-border"}`}
             >
               <div className="p-4">
                 <div className="flex items-start gap-3">
@@ -106,17 +109,18 @@ const LearnPage = () => {
                 {/* Topics */}
                 <div className="mt-3 ml-15 space-y-1.5 pl-[60px]">
                   {comp.topics.map((topic) => {
+                    const isCompleted = completedLessons.includes(topic.id);
                     const inner = (
                       <>
                         {topic.locked ? (
                           <Lock className="h-3.5 w-3.5 text-muted-foreground/40 shrink-0" />
-                        ) : topic.completed ? (
+                        ) : isCompleted ? (
                           <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
                         ) : (
                           <div className="h-3.5 w-3.5 rounded-full border-2 border-primary/40 shrink-0" />
                         )}
                         <span className={topic.locked ? "line-through" : ""}>{topic.title}</span>
-                        {!topic.locked && !topic.completed && (
+                        {!topic.locked && !isCompleted && (
                           <ChevronRight className="h-3 w-3 ml-auto text-muted-foreground" />
                         )}
                       </>
@@ -124,7 +128,7 @@ const LearnPage = () => {
                     const baseClass = `flex items-center gap-2 rounded-lg px-3 py-2 text-xs transition-colors ${
                       topic.locked
                         ? "text-muted-foreground/50"
-                        : topic.completed
+                        : isCompleted
                         ? "bg-success/10 text-foreground"
                         : "bg-secondary hover:bg-muted cursor-pointer text-foreground"
                     }`;

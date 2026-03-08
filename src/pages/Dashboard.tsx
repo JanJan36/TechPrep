@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
-import { BookOpen, Wrench, Gamepad2, Compass, ChevronRight, Sparkles } from "lucide-react";
-import { defaultProgress } from "@/data/competencies";
+import { BookOpen, Wrench, Gamepad2, Compass, ChevronRight, Sparkles, Flame } from "lucide-react";
+import { useProgress } from "@/hooks/useProgress";
+import { useStreak } from "@/hooks/useProgress";
 
 const Dashboard = () => {
-  const progress = defaultProgress;
+  const progress = useProgress();
+  const streak = useStreak();
 
   const navCards = [
     {
@@ -66,6 +68,11 @@ const Dashboard = () => {
             </span>
             <div className="h-4 w-px bg-border" />
             <span className="font-bold text-warning">{progress.xp} XP</span>
+            <div className="h-4 w-px bg-border" />
+            <span className="inline-flex items-center gap-1 font-bold text-destructive">
+              <Flame className="h-4 w-4" />
+              {streak.currentStreak} day{streak.currentStreak !== 1 ? "s" : ""}
+            </span>
           </div>
         </div>
       </section>

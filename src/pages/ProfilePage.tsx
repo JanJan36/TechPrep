@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { BookOpen, Award, Clock, Compass, Flame, Settings, Database, Sun, Moon, Monitor } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { defaultProgress } from "@/data/competencies";
+import { useProgress } from "@/hooks/useProgress";
 import { getHighScores } from "@/hooks/useGameScores";
 import { motion } from "framer-motion";
 
@@ -33,7 +33,7 @@ const saveProfile = (data: ProfileData) => {
 };
 
 const ProfilePage = () => {
-  const progress = defaultProgress;
+  const progress = useProgress();
   const [profile, setProfile] = useState<ProfileData>(getProfile);
   const [nameInput, setNameInput] = useState(profile.displayName);
   const [saved, setSaved] = useState(false);
