@@ -1,11 +1,26 @@
 import { Link } from "react-router-dom";
 import { BookOpen, Wrench, Gamepad2, Compass, ChevronRight, Sparkles, Flame } from "lucide-react";
 import { useProgress } from "@/hooks/useProgress";
-import { useStreak } from "@/hooks/useProgress";
+import { useStreak, useActivityDays } from "@/hooks/useProgress";
+import { useMemo } from "react";
 
 const Dashboard = () => {
   const progress = useProgress();
   const streak = useStreak();
+  const activityDays = useActivityDays();
+
+  const weekDays = useMemo(() => {
+    const result = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const dayLabel = d.toLocaleDateString("en", { weekday: "short" });
+      result.push({ date: dateStr, label: dayLabel, active: activityDays.includes(dateStr) });
+    }
+    return result;
+  }, [activityDays]);
 
   const navCards = [
     {
@@ -112,7 +127,33 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* Weekly Activity */}
+      <section className="mx-auto max-w-4xl px-4 pb-6">
+        <h2 className="font-display font-semibold text-lg text-foreground mb-3">This Week</h2>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-end justify-between gap-2">
+            {weekDays.map((day) => (
+              <div key={day.date} className="flex flex-1 flex-col items-center gap-2">
+                <div
+                  className={`h-10 w-full max-w-[3rem] rounded-lg transition-colors ${
+                    day.active
+                      ? "bg-primary shadow-sm"
+                      : "bg-muted"
+                  }`}
+                />
+                <span className={`text-[11px] font-medium ${day.active ? "text-primary" : "text-muted-foreground"}`}>
+                  {day.label}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            {weekDays.filter((d) => d.active).length} of 7 days active this week
+          </p>
+        </div>
+      </section>
+
+
       <section className="mx-auto max-w-4xl px-4 pb-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-card p-5">
           <div>

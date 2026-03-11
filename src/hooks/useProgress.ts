@@ -4,6 +4,7 @@ import type { UserProgress } from "@/data/competencies";
 const PROGRESS_KEY = "techprep-progress";
 const COMPLETED_LESSONS_KEY = "techprep-completed-lessons";
 const STREAK_KEY = "techprep-streak";
+const ACTIVITY_KEY = "techprep-activity";
 const PROGRESS_EVENT = "progress-updated";
 
 const LEVEL_TITLES: Record<number, string> = {
@@ -122,6 +123,8 @@ export function recordLogin(): StreakData {
   const today = getToday();
   const streak = getStreak();
 
+  logActivity(today); // always log activity
+
   if (streak.lastLoginDate === today) return streak; // already recorded
 
   const yesterday = new Date();
@@ -136,6 +139,44 @@ export function recordLogin(): StreakData {
   localStorage.setItem(STREAK_KEY, JSON.stringify(updated));
   window.dispatchEvent(new Event(PROGRESS_EVENT));
   return updated;
+}
+
+// --- Activity log ---
+
+function logActivity(date: string) {
+  const days = getActivityDays();
+  if (!days.includes(date)) {
+    days.push(date);
+    // keep last 60 days max
+    const trimmed = days.slice(-60);
+    localStorage.setItem(ACTIVITY_KEY, JSON.stringify(trimmed));
+    window.dispatchEvent(new Event(PROGRESS_EVENT));
+  }
+}
+
+export function getActivityDays(): string[] {
+  try {
+    const raw = localStorage.getItem(ACTIVITY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function useActivityDays(): string[] {
+  const [days, setDays] = useState<string[]>(getActivityDays);
+
+  useEffect(() => {
+    const handler = () => setDays(getActivityDays());
+    window.addEventListener(PROGRESS_EVENT, handler);
+    window.addEventListener("storage", handler);
+    return () => {
+      window.removeEventListener(PROGRESS_EVENT, handler);
+      window.removeEventListener("storage", handler);
+    };
+  }, []);
+
+  return days;
 }
 
 export function useStreak(): StreakData {
