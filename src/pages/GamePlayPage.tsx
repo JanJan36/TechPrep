@@ -5,11 +5,25 @@ import { lazy, Suspense } from "react";
 const FlashcardsGame = lazy(() => import("@/components/games/FlashcardsGame"));
 const SpeedTypingGame = lazy(() => import("@/components/games/SpeedTypingGame"));
 const TroubleshootingChallenge = lazy(() => import("@/components/games/TroubleshootingChallenge"));
+const CableMatchGame = lazy(() => import("@/components/games/CableMatchGame"));
+const PortIdentifierGame = lazy(() => import("@/components/games/PortIdentifierGame"));
+const BinaryQuizGame = lazy(() => import("@/components/games/BinaryQuizGame"));
+const AcronymDecoderGame = lazy(() => import("@/components/games/AcronymDecoderGame"));
+const OSCommandQuizGame = lazy(() => import("@/components/games/OSCommandQuizGame"));
+const HardwareSpecsGame = lazy(() => import("@/components/games/HardwareSpecsGame"));
+const SafetyFirstGame = lazy(() => import("@/components/games/SafetyFirstGame"));
 
 const gameMap: Record<string, { title: string; component: React.LazyExoticComponent<React.ComponentType> }> = {
   flashcards: { title: "Component Flashcards", component: FlashcardsGame },
+  "cable-match": { title: "Cable Match", component: CableMatchGame },
+  "port-identifier": { title: "Port Identifier", component: PortIdentifierGame },
   "speed-typing": { title: "Speed Typing: Commands", component: SpeedTypingGame },
+  "binary-quiz": { title: "Binary & Subnetting Quiz", component: BinaryQuizGame },
   troubleshooting: { title: "Timed Troubleshooting", component: TroubleshootingChallenge },
+  "acronym-decoder": { title: "Acronym Decoder", component: AcronymDecoderGame },
+  "os-commands": { title: "OS Command Quiz", component: OSCommandQuizGame },
+  "hardware-specs": { title: "Hardware Specs Match", component: HardwareSpecsGame },
+  "safety-first": { title: "Safety First!", component: SafetyFirstGame },
 };
 
 const GamePlayPage = () => {
